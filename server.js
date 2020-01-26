@@ -1,18 +1,23 @@
 const express = require('express');
+const config = require('config');
+const multer = require('multer');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const User = require('./models/User');
+const auth = require('./routes/auth')
 
 const app = express();
-const urlencodedParses = bodyParser.urlencoded({extended: false});
+const upload = multer();
+
+const dbUrl = config.get("dbUrl");
+const port = config.get("port");
 
 (async () => {
     try {
         await mongoose.connect(
-            'mongodb+srv://KeZzz:b00mka2036@firstcluster-ndmro.mongodb.net/firstApp?retryWrites=true&w=majority', 
-            {useNewUrlParser: true, useUnifiedTopology: true}
+            dbUrl,
+            {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true}
         )
-        app.listen(3003);
+        app.listen(port);
         console.log("connection success");
     }
     catch(err) {
@@ -21,13 +26,11 @@ const urlencodedParses = bodyParser.urlencoded({extended: false});
     }
 })()
 
-// User.create({name: "Artyom"})
-//     .then(res => console.log(res))
-//     .catch(err => console.log(err))
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(upload.none());
+app.use(auth)
 
-app.route('/back')
-    .get((req, res) => {
-        console.log(20);
-        res.send({"hi": "there!"});
-    })
-
+app.use((req, res) => {
+    res.status(404).json("Not Found :(")
+})

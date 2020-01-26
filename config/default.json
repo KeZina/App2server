@@ -1,0 +1,4 @@
+{
+    "dbUrl": "mongodb+srv://KeZzz:b00mka2036@firstcluster-ndmro.mongodb.net/firstApp?retryWrites=true&w=majority",
+    "port": 3003
+}
