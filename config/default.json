@@ -1,4 +1,5 @@
 {
     "dbUrl": "mongodb+srv://KeZzz:b00mka2036@firstcluster-ndmro.mongodb.net/firstApp?retryWrites=true&w=majority",
-    "port": 3003
+    "port": 3003,
+    "jwtSecret": "it_is_a_really_hard_to_hack_jwt_secret"
 }
