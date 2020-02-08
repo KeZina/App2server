@@ -11,17 +11,16 @@ const userSchema = new Schema({
     },
     age: {
         type: Number,
-        required: true
     },
     hash: {
         type: String,
         minlength: 8,
         required: true
     },
-    tokens : [{
-        type: String,
+    tokens : {
+        type: Array,
         required: true
-    }]
+    }
 })
 
 userSchema.methods.addToken = function() {

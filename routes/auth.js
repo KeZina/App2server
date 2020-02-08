@@ -19,15 +19,44 @@ router.post('/users/create', async (req, res) => {
             name,
             age,
             hash,
-            tokens: jwt.sign({_id: this._id}, config.get("jwtSecret"))
+            tokens: []
         })
-        await user.save();
+        await user.addToken();
         res.status(200).json({
             message: "Just now user was created!",
-            tokens: user.tokens
+            token: user.tokens
         });
     } catch(e) {
         console.log(e);
+        res.json(e);
+    }
+})
+
+
+
+router.post('/users/auth', async (req, res) => {
+    const cliToken = req.header("Authorization");
+    const serToken = jwt.verify(cliToken, config.get("jwtSecret"));
+
+    try {
+        const user = await User.findById(serToken._id);
+        
+        if(user) {
+            const {name, age} = user;
+            res.status(200).json({
+                name,
+                age,
+                auth: true
+            })
+        } else if(!user) {
+            res.status(200).json({
+                auth: false
+            })
+        } else throw new Error("Invalid jwt");
+
+    } catch(e) {
+        console.log(e);
+        res.json(e);
     }
 })
 
@@ -35,23 +64,47 @@ router.post('/users/create', async (req, res) => {
 
 router.post('/users/login', async (req, res) => {
     const {name, password} = req.body;
+
     try {
         const user = await User.findOne({name});
+
         if(!user) {
-            res.json(`This name don't exists`);
+            res.json("This name don't exists");
             return;
         }
 
         const checkPass = await bcrypt.compare(password, user.hash);
+
         if(checkPass) {
-            user.addToken();
+            await user.addToken();
+
             res.status(200).json({
                 message: "Success log in",
-                tokens: user.tokens
+                token: user.tokens[user.tokens.length - 1],
             });
-        } else res.json(`Wrong password`)
+        } else res.json({message: "Wrong password"})
+
     } catch(e) {
         console.log(e);
+        res.json(e);
+    }
+})
+
+
+
+router.patch('/users/logout', async (req, res) => {
+    const cliToken = req.header("Authorization");
+    const serToken = jwt.verify(cliToken, config.get("jwtSecret"));
+
+    try {
+        const user = await User.findById(serToken._id);
+        const tokens = user.tokens.filter(token => token !== cliToken);
+        await User.updateOne({_id: user._id}, {tokens : tokens});
+
+        res.status(200).json({message: "Success Log Out"});
+    } catch(e) {
+        console.log(e);
+        res.json(e);
     }
 })
 
